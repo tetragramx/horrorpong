@@ -1,13 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
+
+import { getLeaderboard, login, register, submitScore, type LeaderboardEntry, type User } from './lib/api';
+import { PongCanvas } from './components/PongCanvas';
 import { AuthPanel } from './components/AuthPanel';
 import { Leaderboard } from './components/Leaderboard';
-import { PongCanvas } from './components/PongCanvas';
-import { getLeaderboard, login, register, submitScore, type LeaderboardEntry, type User } from './lib/api';
 
 type Mode = 'single' | 'multi';
 
 function App() {
+    // Mobile detection and paddle movement state
+    const [isMobile, setIsMobile] = useState(false);
+    const [mobileUp, setMobileUp] = useState(false);
+    const [mobileDown, setMobileDown] = useState(false);
+    const [gameInProgress, setGameInProgress] = useState(false);
+
+    useEffect(() => {
+      const check = () => {
+        setIsMobile(
+          typeof window !== 'undefined' &&
+          ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+        );
+      };
+      check();
+      window.addEventListener('resize', check);
+      return () => window.removeEventListener('resize', check);
+    }, []);
   const [showSplash, setShowSplash] = useState(true);
   const [mode, setMode] = useState<Mode>('single');
   const [token, setToken] = useState<string | null>(localStorage.getItem('pong-token'));
@@ -118,11 +136,19 @@ function App() {
 
       <main className="grid-layout">
         <div className="stack-lg animate-rise delay-1">
-          <PongCanvas mode={mode} onGameFinished={(score) => {
-            handleFinishedGame(score).catch((error) => {
-              setToast(error instanceof Error ? error.message : 'Could not save score.');
-            });
-          }} />
+          <PongCanvas
+            mode={mode}
+            onGameFinished={(score) => {
+              setGameInProgress(false);
+              handleFinishedGame(score).catch((error) => {
+                setToast(error instanceof Error ? error.message : 'Could not save score.');
+              });
+            }}
+            isMobile={isMobile}
+            mobileUp={mobileUp}
+            mobileDown={mobileDown}
+            setGameInProgress={setGameInProgress}
+          />
 
           <div className="mode-toggle">
             <button
@@ -155,6 +181,26 @@ function App() {
           <Leaderboard entries={leaderboard} currentUser={user} />
         </div>
       </main>
+
+      {/* Mobile Controls at App Root */}
+      {isMobile && gameInProgress && (
+        <div className="mobile-controls">
+          <button
+            className="mobile-btn"
+            aria-label="Move Up"
+            onTouchStart={e => { e.preventDefault(); setMobileUp(true); }}
+            onTouchEnd={e => { e.preventDefault(); setMobileUp(false); }}
+            onTouchCancel={e => { e.preventDefault(); setMobileUp(false); }}
+          >▲</button>
+          <button
+            className="mobile-btn"
+            aria-label="Move Down"
+            onTouchStart={e => { e.preventDefault(); setMobileDown(true); }}
+            onTouchEnd={e => { e.preventDefault(); setMobileDown(false); }}
+            onTouchCancel={e => { e.preventDefault(); setMobileDown(false); }}
+          >▼</button>
+        </div>
+      )}
     </div>
   );
 }

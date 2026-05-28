@@ -7,6 +7,10 @@ type Side = 'left' | 'right';
 type PongCanvasProps = {
   mode: Mode;
   onGameFinished: (score: number) => void;
+  isMobile?: boolean;
+  mobileUp?: boolean;
+  mobileDown?: boolean;
+  setGameInProgress?: (inProgress: boolean) => void;
 };
 
 const width = 800;
@@ -18,10 +22,11 @@ const winningScore = 7;
 const paddleSpeed = 520;
 const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
-export function PongCanvas({ mode, onGameFinished }: PongCanvasProps) {
+export function PongCanvas({ mode, onGameFinished, isMobile, mobileUp, mobileDown, setGameInProgress }: PongCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasFrameRef = useRef<HTMLDivElement | null>(null);
   const backgroundImageRef = useRef<HTMLImageElement | null>(null);
+    // Remove local isMobile state, now passed as prop
   const [roomId, setRoomId] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [status, setStatus] = useState('Guest mode is live. Play instantly.');
@@ -94,9 +99,11 @@ export function PongCanvas({ mode, onGameFinished }: PongCanvasProps) {
       setStatus('Match started. Fight for the first 7 points.');
     }
     setHasStarted(true);
+    setGameInProgress?.(true);
   };
 
   useEffect(() => {
+    // Keyboard controls (desktop)
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
         movementKeysRef.current.up = true;
@@ -130,6 +137,14 @@ export function PongCanvas({ mode, onGameFinished }: PongCanvasProps) {
       window.removeEventListener('blur', onWindowBlur);
     };
   }, []);
+
+  // Mobile controls (from App)
+  useEffect(() => {
+    if (isMobile) {
+      movementKeysRef.current.up = !!mobileUp;
+      movementKeysRef.current.down = !!mobileDown;
+    }
+  }, [isMobile, mobileUp, mobileDown]);
 
   useEffect(() => {
     if (mode !== 'multi') {
@@ -549,6 +564,15 @@ export function PongCanvas({ mode, onGameFinished }: PongCanvasProps) {
     </section>
   );
 }
+
+// Mobile controls CSS now in App.css at app root
+//   font-size: 2rem;
+//   opacity: 0.92;
+//   margin: 0 auto;
+//   box-shadow: 0 2px 12px #000b;
+//   user-select: none;
+//   touch-action: none;
+// }
 
 function drawPaddlesAndBall(
   context: CanvasRenderingContext2D,

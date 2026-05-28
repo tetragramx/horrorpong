@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-a: #020202;
+  --bg-b: #0a0a0a;
+  --bg-c: #121212;
+  --panel: rgba(12, 12, 12, 0.9);
+  --panel-strong: rgba(18, 18, 18, 0.96);
+  --text: #f6f6f6;
+  --muted: #bdbdbd;
+  --line: rgba(190, 190, 190, 0.3);
+  --line-soft: rgba(255, 255, 255, 0.16);
+  --accent: #d9d9d9;
+  --accent-bright: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--text);
+  background: #000000;
+  position: relative;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: -25%;
+  pointer-events: none;
+}
+
+body::before {
+  background: transparent;
+  animation: mistDrift 18s ease-in-out infinite alternate;
+}
+
+body::after {
+  opacity: 0.25;
+  background-image: linear-gradient(transparent 96%, rgba(255, 255, 255, 0.08) 100%);
+  background-size: 100% 4px;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.03em;
+}
+
+p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+@keyframes mistDrift {
+  0% {
+    transform: translate3d(-2%, 0%, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(2%, -2%, 0) scale(1.08);
+  }
+}
